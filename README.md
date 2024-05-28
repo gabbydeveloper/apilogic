@@ -2,4 +2,5 @@
 
 ## Dev
 
-APIs y backend en general, para varias aplicaciones
+Backend developed in CodeIgniter 3.
+It's an API for managing some applications.
