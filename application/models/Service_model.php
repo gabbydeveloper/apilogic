@@ -2,6 +2,16 @@
 
 class Service_model extends CI_Model
 {
+
+  public function __construct()
+  {
+    parent::__construct();
+
+    // Cargar la segunda base de datos
+    $this->db2 = $this->load->database('second', TRUE);
+  }
+
+
   /********************************************************************************
    *  HEROES
    ********************************************************************************/
@@ -75,9 +85,9 @@ class Service_model extends CI_Model
               WHERE t.id_project = p.id_project) AS xxx_total_tasks";
 
     if (!empty($id))
-      $this->db->where('p.id_project', $id);
+      $this->db2->where('p.id_project', $id);
 
-    $data = $this->db->select("p.id_project,
+    $data = $this->db2->select("p.id_project,
                                p.name_project, 
                                p.id_department, 
                                p.duration_months,
@@ -112,7 +122,7 @@ class Service_model extends CI_Model
 
   public function getDepartments()
   {
-    return $this->db->select('id_department, name_department')
+    return $this->db2->select('id_department, name_department')
                     ->get('department')->result_array();
   }
 
@@ -122,14 +132,14 @@ class Service_model extends CI_Model
     if ($id == '0' or empty($id))
     {
       unset($data['id_project']);
-      $result = $this->db->insert('project', $data);
+      $result = $this->db2->insert('project', $data);
       if (!$result) return false;
-      $id = $this->db->insert_id();
+      $id = $this->db2->insert_id();
       $data['id_project'] = $id;
     }
     else
     {
-      $result = $this->db->where('id_project', $data['id_project'])->update('project', $data);
+      $result = $this->db2->where('id_project', $data['id_project'])->update('project', $data);
       if (!$result) return false;
     }
     return $data;
@@ -138,9 +148,9 @@ class Service_model extends CI_Model
   public function getUsers($token)
   {
     if (!empty($token))
-      $this->db->where('token', $token);
+      $this->db2->where('token', $token);
 
-    $data = $this->db->select('id_executor AS id_user,
+    $data = $this->db2->select('id_executor AS id_user,
                                 name_executor AS name_user,
                                 user_name AS user,
                                 token')
@@ -170,7 +180,7 @@ class Service_model extends CI_Model
 
   public function getLogin($user, $pwd)
   {
-    $data = $this->db->select('id_executor AS id_user,
+    $data = $this->db2->select('id_executor AS id_user,
                               name_executor AS name_user,
                               user_name AS user,
                               token')
@@ -186,7 +196,7 @@ class Service_model extends CI_Model
     $part3 = $this->generateToken(6);
     $token = $part1 . '.' . $part2 . '.' . $part3;
 
-    $this->db->where('id_executor', $data['id_user'])
+    $this->db2->where('id_executor', $data['id_user'])
              ->set('token', $token)
              ->update('executor');
 

@@ -19,7 +19,6 @@ class Service extends REST_Controller
    *  HEROES
    ********************************************************************************/
 
-
   public function heroes_get()
   {
     $this->load->helper('url');

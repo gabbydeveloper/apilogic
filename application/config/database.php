@@ -73,6 +73,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 $active_group = 'default';
 $query_builder = TRUE;
 
+//Base de datos activa
 $db['default'] = array(
 	'dsn'	=> '',
 	'hostname' => '127.0.0.1',
@@ -94,3 +95,7 @@ $db['default'] = array(
 	'failover' => array(),
 	'save_queries' => TRUE
 );
+
+//Base de datos secundaria
+$db['second'] = array_merge($db['default'], array('database' => 'tasko'));
+
