@@ -96,6 +96,12 @@ $db['default'] = array(
 	'save_queries' => TRUE
 );
 
-//Base de datos secundaria
-$db['second'] = array_merge($db['default'], array('database' => 'tasko'));
+//Base de datos T A S K O
+$db['tasko'] = array_merge($db['default'], array('database' => 'tasko'));
+
+//Base de datos H E R O E S
+$db['heroes'] = array_merge($db['default'], array('database' => 'heroes'));
+
+//Base de datos B U D B U D
+$db['budbud'] = array_merge($db['default'], array('database' => 'budbud'));
 

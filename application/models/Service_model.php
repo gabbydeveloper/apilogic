@@ -8,7 +8,9 @@ class Service_model extends CI_Model
     parent::__construct();
 
     // Cargar la segunda base de datos
-    $this->db2 = $this->load->database('second', TRUE);
+    $this->db2 = $this->load->database('tasko', TRUE);
+    $this->db3 = $this->load->database('heroes', TRUE);
+    $this->db4 = $this->load->database('budbud', TRUE);
   }
 
 
@@ -212,18 +214,28 @@ class Service_model extends CI_Model
 
   public function getContinentes()
   {
-    return $this->db->get("continente")->result_array();
+    return $this->db3->get("continente")->result_array();
   }
 
   public function getPaises()
   {
-    return $this->db->get("pais")->result_array();
+    return $this->db3->get("pais")->result_array();
   }
 
   public function getPaisesByContinente($idContinente)
   {
-    return $this->db->where("id_continente = $idContinente")
+    return $this->db3->where("id_continente = $idContinente")
                     ->get("pais")->result_array();
   }
+
+  /********************************************************************************
+   *  BUDGET BUDDY
+   ********************************************************************************/
+
+  public function getTipos()
+  {
+    return $this->db4->get("tipo_ingreso_gasto_meta")->result_array();
+  }
+
 
 }

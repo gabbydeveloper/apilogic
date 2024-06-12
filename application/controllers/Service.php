@@ -303,5 +303,22 @@ class Service extends REST_Controller
 
   }
 
+  /********************************************************************************
+   *  BUDGET BUDDY
+   ********************************************************************************/
+
+  public function tipos_get()
+  {
+    $data = $this->model->getTipos();
+    if ($data)
+    {
+      $this->response($data, 200);
+    }
+    else
+    {
+      $this->response(array('error' => 'Datos no encontrados'), 404);
+    }
+  }
+
 }
 
