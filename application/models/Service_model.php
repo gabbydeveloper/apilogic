@@ -97,9 +97,9 @@ class Service_model extends CI_Model
                                0 AS xxx_percentage,
                                d.name_department AS xxx_department,
                                $sq1, $sq2")
-                     ->join('department d', 'd.id_department = p.id_department')
-                     ->order_by('p.id_project')
-                     ->get('project p')->result_array();
+                      ->join('department d', 'd.id_department = p.id_department')
+                      ->order_by('p.id_project')
+                      ->get('project p')->result_array();
 
     if (!empty($data))
     {
@@ -125,7 +125,7 @@ class Service_model extends CI_Model
   public function getDepartments()
   {
     return $this->db2->select('id_department, name_department')
-                    ->get('department')->result_array();
+                     ->get('department')->result_array();
   }
 
   public function saveProject($data)
@@ -156,7 +156,7 @@ class Service_model extends CI_Model
                                 name_executor AS name_user,
                                 user_name AS user,
                                 token')
-                     ->get('executor')->result_array();
+                      ->get('executor')->result_array();
 
     if (!empty($token))
       $data = $data[0];
@@ -186,9 +186,9 @@ class Service_model extends CI_Model
                               name_executor AS name_user,
                               user_name AS user,
                               token')
-                     ->where('user_name', $user)
-                     ->where("password = md5('$pwd')")
-                     ->get('executor')->row_array();
+                      ->where('user_name', $user)
+                      ->where("password = md5('$pwd')")
+                      ->get('executor')->row_array();
 
     if (empty($data))
       return false;
@@ -199,8 +199,8 @@ class Service_model extends CI_Model
     $token = $part1 . '.' . $part2 . '.' . $part3;
 
     $this->db2->where('id_executor', $data['id_user'])
-             ->set('token', $token)
-             ->update('executor');
+              ->set('token', $token)
+              ->update('executor');
 
     $data['token'] = $token;
 
@@ -225,17 +225,84 @@ class Service_model extends CI_Model
   public function getPaisesByContinente($idContinente)
   {
     return $this->db3->where("id_continente = $idContinente")
-                    ->get("pais")->result_array();
+                     ->get("pais")->result_array();
   }
 
   /********************************************************************************
    *  BUDGET BUDDY
    ********************************************************************************/
 
-  public function getTipos()
+  public function getUserByToken($token)
   {
-    return $this->db4->get("tipo_ingreso_gasto_meta")->result_array();
+    $data = $this->db4->select("id_usuario,
+                              CONCAT(nombre_usuario, ' ', apellido_usuario) AS nombre,
+                              token")
+                      ->where('token', $token)
+                      ->get('usuario')->row_array();
+
+    return $data;
+
   }
 
+  public function getLoginBud($user, $pwd)
+  {
+    $data = $this->db4->select("id_usuario,
+                              CONCAT(nombre_usuario, ' ', apellido_usuario) AS nombre,
+                              token")
+                      ->where('mail_usuario', $user)
+                      ->where("clave = md5('$pwd')")
+                      ->get('usuario')->row_array();
+
+    if (empty($data))
+      return false;
+
+    $part1 = $this->generateToken(6);
+    $part2 = $this->generateToken(6);
+    $part3 = $this->generateToken(6);
+    $token = $part1 . '.' . $part2 . '.' . $part3;
+
+    $this->db4->where('id_usuario', $data['id_usuario'])
+              ->set('token', $token)
+              ->update('usuario');
+
+    $data['token'] = $token;
+
+    return $data;
+
+  }
+
+  public function getTipos($usuario)
+  {
+    return $this->db4->where('id_usuario', $usuario)
+                     ->get("tipo_ingreso_gasto_meta")->result_array();
+  }
+
+  public function saveForm($usuario, $idForma, $data)
+  {
+    $correcto = true;
+    $newId = '';
+    switch ($idForma)
+    {
+      case 'frmCategorias':
+      {
+        $data['id_usuario'] = $usuario;
+        if (empty($data['id_tipo_ingreso_gasto_meta']))
+        {
+          $correcto = $this->db4->insert('tipo_ingreso_gasto_meta', $data);
+          $newId = $this->db4->insert_id();
+        }
+        else
+        {
+          $correcto = $this->db4->where('id_tipo_ingreso_gasto_meta', $data['id_tipo_ingreso_gasto_meta'])
+                                ->update('tipo_ingreso_gasto_meta', $data);
+          $newId = $data['id_tipo_ingreso_gasto_meta'];
+        }
+        break;
+      }
+    }
+
+    return array('success' => $correcto, 'newId' => $newId);
+
+  }
 
 }

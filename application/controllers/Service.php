@@ -307,12 +307,65 @@ class Service extends REST_Controller
    *  BUDGET BUDDY
    ********************************************************************************/
 
-  public function tipos_get()
+  public function loginbud_get()
   {
-    $data = $this->model->getTipos();
+    // Obtener parámetros de la URL
+    $user = $this->input->get('usr');
+    $pwd = $this->input->get('pwd');
+
+    $data = $this->model->getLoginBud($user, $pwd);
     if ($data)
     {
       $this->response($data, 200);
+    }
+    else
+    {
+      $this->response(array('error' => 'Datos no encontrados'), 404);
+    }
+  }
+
+  public function userbud_get()
+  {
+    $token = $this->input->get('tkn');
+
+    $data = $this->model->getUserByToken($token);
+    if ($data)
+    {
+      $this->response($data, 200);
+    }
+    else
+    {
+      $this->response(array('error' => 'Datos no encontrados'), 404);
+    }
+  }
+
+  public function tipos_get()
+  {
+    $usuario = $this->input->get('usuario');
+    $data = $this->model->getTipos($usuario);
+    if ($data)
+    {
+      $this->response($data, 200);
+    }
+    else
+    {
+      $this->response(array('error' => 'Datos no encontrados'), 404);
+    }
+  }
+
+  public function saveform_post()
+  {
+    $idForma = $this->input->post('idForma');
+    $data = $this->input->post('data');
+    $usuario = $this->input->post('usuario');
+    if ($data)
+    {
+      $res = $this->model->saveForm($usuario, $idForma, json_decode($data, true));
+      $correcto = $res['success'];
+      if ($correcto)
+        $this->response(array('newId' => $res['newId']), 200);
+      else
+        $this->response(array('error' => 'Ha ocurrido un error'), 404);
     }
     else
     {
