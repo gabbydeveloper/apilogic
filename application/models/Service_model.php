@@ -232,16 +232,34 @@ class Service_model extends CI_Model
    *  BUDGET BUDDY
    ********************************************************************************/
 
+  private function _getContinua($idUsuario)
+  {
+    $data = $this->db4->select('TIMESTAMPDIFF(HOUR, fecha_hora_token, NOW()) AS horas')
+                      ->where('id_usuario', $idUsuario)
+                      ->get('usuario')->row_array();
+
+    if ($data['horas'] > 8)
+      return false;
+
+    return true;
+  }
+
   public function getUserByToken($token)
   {
     $data = $this->db4->select("id_usuario,
                               CONCAT(nombre_usuario, ' ', apellido_usuario) AS nombre,
-                              token")
+                              token,
+                              TIMESTAMPDIFF(HOUR, fecha_hora_token, NOW()) AS horas")
                       ->where('token', $token)
                       ->get('usuario')->row_array();
 
+    if (!empty($data))
+    {
+      $horas = $data['horas'];
+      if ($horas > 8)
+        $data = null;
+    }
     return $data;
-
   }
 
   public function getLoginBud($user, $pwd)
@@ -261,9 +279,12 @@ class Service_model extends CI_Model
     $part3 = $this->generateToken(6);
     $token = $part1 . '.' . $part2 . '.' . $part3;
 
+    $hoy = date('Y-m-d H:i:s');
+
+    $upddata = array('token' => $token, 'fecha_hora_token' => $hoy);
+
     $this->db4->where('id_usuario', $data['id_usuario'])
-              ->set('token', $token)
-              ->update('usuario');
+              ->update('usuario', $upddata);
 
     $data['token'] = $token;
 
@@ -273,33 +294,45 @@ class Service_model extends CI_Model
 
   public function getTipos($usuario)
   {
-    return $this->db4->where('id_usuario', $usuario)
-                     ->get("tipo_ingreso_gasto_meta")->result_array();
+    $continua = $this->_getContinua($usuario);
+    $data = $this->db4->where('id_usuario', $usuario)
+                      ->get("tipo_ingreso_gasto_meta")->result_array();
+
+    if (!$continua)
+      $data = null;
+
+    return $data;
   }
 
   public function saveForm($usuario, $idForma, $data)
   {
     $correcto = true;
+    $continua = $this->_getContinua($usuario);
     $newId = '';
-    switch ($idForma)
-    {
-      case 'frmCategorias':
+
+    if(!$continua)
+      $correcto = false;
+
+    if ($correcto)
+      switch ($idForma)
       {
-        $data['id_usuario'] = $usuario;
-        if (empty($data['id_tipo_ingreso_gasto_meta']))
+        case 'frmCategorias':
         {
-          $correcto = $this->db4->insert('tipo_ingreso_gasto_meta', $data);
-          $newId = $this->db4->insert_id();
+          $data['id_usuario'] = $usuario;
+          if (empty($data['id_tipo_ingreso_gasto_meta']))
+          {
+            $correcto = $this->db4->insert('tipo_ingreso_gasto_meta', $data);
+            $newId = $this->db4->insert_id();
+          }
+          else
+          {
+            $correcto = $this->db4->where('id_tipo_ingreso_gasto_meta', $data['id_tipo_ingreso_gasto_meta'])
+                                  ->update('tipo_ingreso_gasto_meta', $data);
+            $newId = $data['id_tipo_ingreso_gasto_meta'];
+          }
+          break;
         }
-        else
-        {
-          $correcto = $this->db4->where('id_tipo_ingreso_gasto_meta', $data['id_tipo_ingreso_gasto_meta'])
-                                ->update('tipo_ingreso_gasto_meta', $data);
-          $newId = $data['id_tipo_ingreso_gasto_meta'];
-        }
-        break;
       }
-    }
 
     return array('success' => $correcto, 'newId' => $newId);
 
