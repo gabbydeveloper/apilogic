@@ -296,6 +296,7 @@ class Service_model extends CI_Model
   {
     $continua = $this->_getContinua($usuario);
     $data = $this->db4->where('id_usuario', $usuario)
+                      ->order_by('tipo_ingreso_gasto_meta, nombre_tipo_ingreso_gasto_meta')
                       ->get("tipo_ingreso_gasto_meta")->result_array();
 
     if (!$continua)
@@ -310,7 +311,7 @@ class Service_model extends CI_Model
     $continua = $this->_getContinua($usuario);
     $newId = '';
 
-    if(!$continua)
+    if (!$continua)
       $correcto = false;
 
     if ($correcto)
@@ -335,7 +336,33 @@ class Service_model extends CI_Model
       }
 
     return array('success' => $correcto, 'newId' => $newId);
+  }
 
+  public function deteRow($usuario, $idGrid, $data)
+  {
+    $correcto = true;
+    $total = 0;
+    $continua = $this->_getContinua($usuario);
+    if (!$continua)
+      $correcto = false;
+
+    if ($correcto)
+    {
+      switch ($idGrid)
+      {
+        case 'grdCategorias':
+          $tabla = 'tipo_ingreso_gasto_meta';
+          $pkColumn = 'id_tipo_ingreso_gasto_meta';
+          break;
+      }
+
+      $total = count($data);
+      $ids = implode(',', $data);
+      $correcto = $this->db4->where("$pkColumn IN ($ids)")
+                            ->delete($tabla);
+    }
+
+    return array('success' => $correcto, 'total' => $total);
   }
 
 }

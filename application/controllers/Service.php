@@ -373,5 +373,25 @@ class Service extends REST_Controller
     }
   }
 
+  public function deleterow_post()
+  {
+    $idGrid = $this->input->post('idGrid');
+    $data = $this->input->post('data');
+    $usuario = $this->input->post('usuario');
+    if ($data)
+    {
+      $res = $this->model->deteRow($usuario, $idGrid, json_decode($data, true));
+      $correcto = $res['success'];
+      if ($correcto)
+        $this->response(array('total' => $res['total']), 200);
+      else
+        $this->response(array('error' => 'Ha ocurrido un error'), 404);
+    }
+    else
+    {
+      $this->response(array('error' => 'Ha ocurrido un error'), 404);
+    }
+  }
+
 }
 
