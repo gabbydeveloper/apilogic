@@ -2,6 +2,7 @@
 
 class Cors
 {
+
   public function initCors()
   {
     header("Access-Control-Allow-Origin: *");
